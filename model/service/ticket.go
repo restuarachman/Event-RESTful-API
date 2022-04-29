@@ -7,5 +7,5 @@ type TicketService interface {
 	GetAll() ([]domain.Ticket, error)
 	Get(id uint) (domain.Ticket, error)
 	Delete(ticket domain.Ticket) (domain.Ticket, error)
-	GetByEventId(event_id uint) ([]domain.Ticket, error)
+	GetAllByEventId(event_id uint) ([]domain.Ticket, error)
 }

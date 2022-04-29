@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type Ticket struct {
 	gorm.Model
-	EventId      uint           `json:"event id" form:"event id"`
+	EventId      uint
 	Name         string         `json:"name" form:"name"`
 	Description  string         `json:"description" form:"description"`
 	Price        int            `json:"price" form:"price"`

@@ -3,6 +3,7 @@ package response
 import "ticketing/model/domain"
 
 type TicketResponse struct {
+	ID          uint
 	EventId     uint
 	Name        string
 	Description string
@@ -11,6 +12,7 @@ type TicketResponse struct {
 
 func ToTicketResponse(ticket domain.Ticket) TicketResponse {
 	return TicketResponse{
+		ID:          ticket.ID,
 		EventId:     ticket.EventId,
 		Name:        ticket.Name,
 		Description: ticket.Description,
