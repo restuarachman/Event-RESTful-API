@@ -19,12 +19,35 @@ func CreateToken(userId uint, role string) (string, error) {
 	return token.SignedString([]byte(constants.SECRET_JWT))
 }
 
-func ExtractTokenUserRole(c echo.Context) string {
+func ExtractTokenUser(c echo.Context) (uint, string) {
 	user := c.Get("user").(*jwt.Token)
 	if user.Valid {
 		claims := user.Claims.(jwt.MapClaims)
+		userId := claims["userId"].(float64)
 		role := claims["role"].(string)
-		return role
+		return uint(userId), role
 	}
-	return ""
+	return 0, ""
 }
+
+// func ExtractTokenUserRole(c echo.Context) string {
+// 	user := c.Get("user").(*jwt.Token)
+// 	if user.Valid {
+// 		claims := user.Claims.(jwt.MapClaims)
+// 		role := claims["role"].(string)
+
+// 		return role
+// 	}
+// 	return ""
+// }
+
+// func ExtractTokenUserId(c echo.Context) uint {
+// 	user := c.Get("user").(*jwt.Token)
+// 	if user.Valid {
+// 		claims := user.Claims.(jwt.MapClaims)
+// 		role := claims["userId"].(float64)
+
+// 		return uint(role)
+// 	}
+// 	return 0
+// }

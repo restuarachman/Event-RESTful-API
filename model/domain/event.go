@@ -7,11 +7,12 @@ import (
 )
 
 type Event struct {
-	gorm.DB
-	name        string
-	description string
-	date_start  time.Time
-	date_end    time.Time
-	time        string
-	location    string
+	gorm.Model
+	UserId      uint      `json:"user id" form:"user id"`
+	Name        string    `json:"name" form:"name"`
+	Description string    `json:"description" form:"description"`
+	DateStart   time.Time `json:"date start" form:"date start"`
+	DateEnd     time.Time `json:"date end" form:"date end"`
+	Time        string    `json:"time" form:"time"`
+	Location    string    `json:"location" form:"location"`
 }

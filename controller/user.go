@@ -42,9 +42,10 @@ func (uc UserController) Get(c echo.Context) error {
 	}
 	return NewSuccessResponse(c, response.ToUserResponse(user))
 }
-func (uc UserController) Edit(c echo.Context) error {
-	id, _ := strconv.Atoi(c.Param("id"))
-	user, err := uc.us.Get(uint(id))
+
+func (uc UserController) Update(c echo.Context) error {
+	event_id, _ := strconv.Atoi(c.Param("event_id"))
+	user, err := uc.us.Get(uint(event_id))
 
 	if err != nil {
 		return NewErrorResponse(c, http.StatusInternalServerError, err)
@@ -59,6 +60,7 @@ func (uc UserController) Edit(c echo.Context) error {
 	}
 	return NewSuccessResponse(c, response.ToUserResponse(user))
 }
+
 func (uc UserController) Delete(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 	user, err := uc.us.Get(uint(id))

@@ -8,7 +8,7 @@ import (
 
 func EoMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		role := ExtractTokenUserRole(c)
+		_, role := ExtractTokenUser(c)
 		if role == "eo" || role == "admin" {
 			return next(c)
 		}

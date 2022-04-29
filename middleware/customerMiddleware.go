@@ -8,7 +8,7 @@ import (
 
 func CustomerMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		role := ExtractTokenUserRole(c)
+		_, role := ExtractTokenUser(c)
 		if role == "customer" || role == "admin" {
 			return next(c)
 		}

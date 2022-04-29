@@ -36,7 +36,7 @@ func ToUserLoginResponse(user domain.User, token string) UserLoginResponse {
 }
 
 func ToUserListResponse(users []domain.User) []UserResponse {
-	var response []UserResponse
+	response := []UserResponse{}
 	for _, value := range users {
 		response = append(response, ToUserResponse(value))
 	}

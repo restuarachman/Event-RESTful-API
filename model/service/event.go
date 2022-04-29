@@ -7,4 +7,5 @@ type EventService interface {
 	GetAll() ([]domain.Event, error)
 	Get(id uint) (domain.Event, error)
 	Delete(event domain.Event) (domain.Event, error)
+	GetByUserId(user_id uint) ([]domain.Event, error)
 }

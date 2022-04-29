@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-
 	"ticketing/model/domain"
 
 	"gorm.io/driver/mysql"
@@ -44,6 +43,7 @@ func InitialMigration() {
 		&domain.User{},
 		&domain.Ticket{},
 		&domain.Order{},
-		// &domain.OrderDetails{},
+		&domain.OrderDetails{},
+		&domain.Event{},
 	)
 }
