@@ -15,4 +15,6 @@ type Event struct {
 	DateEnd     time.Time `json:"date end" form:"date end"`
 	Time        string    `json:"time" form:"time"`
 	Location    string    `json:"location" form:"location"`
+	User        User      `gorm:"foreignKey:UserId"`
+	Tickets     []Ticket  `gorm:"foreignKey:EventId"`
 }

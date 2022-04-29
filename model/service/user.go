@@ -7,5 +7,5 @@ type UserService interface {
 	GetAll() ([]domain.User, error)
 	Get(id uint) (domain.User, error)
 	Delete(user domain.User) (domain.User, error)
-	Login(user domain.User) (domain.User, error)
+	GetByUsername(user domain.User) (domain.User, error)
 }

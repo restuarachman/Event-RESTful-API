@@ -41,10 +41,10 @@ func main() {
 	eEO.Use(mid.EoMiddleware)
 
 	// Route
-	eAdmin.GET("api/v1/users", uc.GetAll, mid.AdminMiddleware)
-	eAdmin.GET("api/v1/users/:id", uc.Get)
-	eCustomer.PUT("api/v1/users/:id", uc.Update)
-	eCustomer.DELETE("api/v1/users/:id", uc.Delete)
+	eAdmin.GET("api/v1/users", uc.GetAll)
+	eAdmin.GET("api/v1/users/:user_id", uc.Get)
+	eCustomer.PUT("api/v1/users/:user_id", uc.Update)
+	eCustomer.DELETE("api/v1/users/:user_id", uc.Delete)
 	e.POST("api/v1/register", uc.Register)
 	e.POST("api/v1/login", uc.Login)
 

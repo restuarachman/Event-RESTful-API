@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"ticketing/helper/encrypt"
 	mid "ticketing/middleware"
 	"ticketing/model/domain"
 	"ticketing/model/response"
@@ -31,8 +32,8 @@ func (uc UserController) GetAll(c echo.Context) error {
 }
 
 func (uc UserController) Get(c echo.Context) error {
-	id, _ := strconv.Atoi(c.Param("id"))
-	user, err := uc.us.Get(uint(id))
+	user_id, _ := strconv.Atoi(c.Param("user_id"))
+	user, err := uc.us.Get(uint(user_id))
 
 	if err != nil {
 		return NewErrorResponse(c, http.StatusInternalServerError, err)
@@ -44,8 +45,8 @@ func (uc UserController) Get(c echo.Context) error {
 }
 
 func (uc UserController) Update(c echo.Context) error {
-	event_id, _ := strconv.Atoi(c.Param("event_id"))
-	user, err := uc.us.Get(uint(event_id))
+	user_id, _ := strconv.Atoi(c.Param("user_id"))
+	user, err := uc.us.Get(uint(user_id))
 
 	if err != nil {
 		return NewErrorResponse(c, http.StatusInternalServerError, err)
@@ -54,6 +55,13 @@ func (uc UserController) Update(c echo.Context) error {
 		return NewErrorResponse(c, http.StatusInternalServerError, fmt.Errorf("user not found"))
 	}
 	c.Bind(&user)
+
+	hashPassword, err := encrypt.Hash(user.Password)
+	if err != nil {
+		return NewErrorResponse(c, http.StatusInternalServerError, err)
+	}
+	user.Password = hashPassword
+
 	user, err = uc.us.Save(user)
 	if err != nil {
 		return NewErrorResponse(c, http.StatusInternalServerError, err)
@@ -62,8 +70,8 @@ func (uc UserController) Update(c echo.Context) error {
 }
 
 func (uc UserController) Delete(c echo.Context) error {
-	id, _ := strconv.Atoi(c.Param("id"))
-	user, err := uc.us.Get(uint(id))
+	user_id, _ := strconv.Atoi(c.Param("user_id"))
+	user, err := uc.us.Get(uint(user_id))
 
 	if err != nil {
 		return NewErrorResponse(c, http.StatusInternalServerError, err)
@@ -79,24 +87,34 @@ func (uc UserController) Login(c echo.Context) error {
 	var user domain.User
 
 	c.Bind(&user)
-	user, err := uc.us.Login(user)
+	userDB, err := uc.us.GetByUsername(user)
 	if err != nil {
 		return NewErrorResponse(c, http.StatusInternalServerError, err)
 	}
 
-	token, err := mid.CreateToken(user.ID, user.Role)
+	if !encrypt.ValidateHash(user.Password, userDB.Password) {
+		return NewErrorResponse(c, http.StatusForbidden, fmt.Errorf("Username or Password invalid"))
+	}
+
+	token, err := mid.CreateToken(userDB.ID, userDB.Role)
 	if err != nil {
 		return NewErrorResponse(c, http.StatusInternalServerError, err)
 	}
 
-	return NewSuccessResponse(c, response.ToUserLoginResponse(user, token))
+	return NewSuccessResponse(c, response.ToUserLoginResponse(userDB, token))
 }
 
 func (uc UserController) Register(c echo.Context) error {
 	var user domain.User
 	c.Bind(&user)
 
-	user, err := uc.us.Save(user)
+	hashPassword, err := encrypt.Hash(user.Password)
+	if err != nil {
+		return NewErrorResponse(c, http.StatusInternalServerError, err)
+	}
+	user.Password = hashPassword
+
+	user, err = uc.us.Save(user)
 	if err != nil {
 		return NewErrorResponse(c, http.StatusInternalServerError, err)
 	}

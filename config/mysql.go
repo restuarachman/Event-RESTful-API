@@ -43,7 +43,7 @@ func InitialMigration() {
 		&domain.User{},
 		&domain.Ticket{},
 		&domain.Order{},
-		&domain.OrderDetails{},
 		&domain.Event{},
+		&domain.OrderDetails{},
 	)
 }

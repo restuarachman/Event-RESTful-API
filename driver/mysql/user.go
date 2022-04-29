@@ -42,8 +42,8 @@ func (us *DBUserService) Delete(user domain.User) (domain.User, error) {
 	return user, err
 }
 
-func (us *DBUserService) Login(user domain.User) (domain.User, error) {
-	tx := us.db.Where("username = ? AND password = ?", user.Username, user.Password).First(&user)
+func (us *DBUserService) GetByUsername(user domain.User) (domain.User, error) {
+	tx := us.db.Find(&user, "username = ?", user.Username)
 	err := tx.Error
 	return user, err
 }
