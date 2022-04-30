@@ -46,31 +46,26 @@ func main() {
 	// Route
 	eAdmin.GET("api/v1/users", uc.GetAll)
 	eAdmin.GET("api/v1/users/:user_id", uc.Get)
-	eCustomer.PUT("api/v1/users/:user_id", uc.Update)
-	eCustomer.DELETE("api/v1/users/:user_id", uc.Delete)
+	eJwt.PUT("api/v1/users/:user_id", uc.Update)
+	eJwt.DELETE("api/v1/users/:user_id", uc.Delete)
 	e.POST("api/v1/register", uc.Register)
 	e.POST("api/v1/login", uc.Login)
 
 	e.GET("api/v1/events", ec.GetAll)
+	eEO.POST("api/v1/events", ec.Create)
 	e.GET("api/v1/events/:event_id", ec.Get)
-	eEO.GET("api/v1/users/:user_id/events", ec.GetAllEventByUserId, mid.SelfMiddleware)
-	eEO.POST("api/v1/events", ec.Create1)
-	eEO.POST("api/v1/users/:user_id/events", ec.Create2, mid.SelfMiddleware)
-	eEO.GET("api/v1/users/:user_id/events/:event_id", ec.Get, mid.SelfMiddleware)
-	// eEO.PUT("api/v1/events/:event_id", ec.Update)
-	eEO.PUT("api/v1/users/:user_id/events/:event_id", ec.Update, mid.SelfMiddleware)
-	// eEO.DELETE("api/v1/events/:event_id", ec.Delete)
-	eEO.DELETE("api/v1/users/:user_id/events/:event_id", ec.Delete, mid.SelfMiddleware)
+	eEO.PUT("api/v1/events/:event_id", ec.Update)
+	eEO.DELETE("api/v1/events/:event_id", ec.Delete)
+	e.GET("api/v1/users/:user_id/events", ec.GetAllEventByUserId)
 
 	e.GET("api/v1/tickets", tc.GetAll)
 	e.GET("api/v1/tickets/:ticket_id", tc.Get)
-	e.GET("api/v1/events/:event_id/tickets", tc.GetAllByEventId)
 	eEO.POST("api/v1/events/:event_id/tickets", tc.Create)
 	eEO.PUT("api/v1/events/:event_id/tickets/:ticket_id", tc.Update)
 	eEO.DELETE("api/v1/events/:event_id/tickets/:ticket_id", tc.Delete)
+	e.GET("api/v1/events/:event_id/tickets", tc.GetAllByEventId)
 
 	if err := e.Start(":8000"); err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
-
 }
