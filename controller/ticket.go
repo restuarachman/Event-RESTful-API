@@ -13,13 +13,13 @@ import (
 
 type TicketController struct {
 	ts service.TicketService
-	es service.EventService
+	ec EventController
 }
 
-func NewTicketController(ts service.TicketService, es service.EventService) TicketController {
+func NewTicketController(ts service.TicketService, ec EventController) TicketController {
 	return TicketController{
 		ts: ts,
-		es: es,
+		ec: ec,
 	}
 }
 
@@ -27,9 +27,18 @@ func (tc TicketController) Create(c echo.Context) error {
 	var ticket domain.Ticket
 	event_id, _ := strconv.Atoi(c.Param("event_id"))
 
-	event, err := tc.checkEvent(c, uint(event_id))
+	// check Event
+	event, err := tc.ec.es.Get(uint(event_id))
 	if err != nil {
 		return NewErrorResponse(c, http.StatusInternalServerError, err)
+	}
+	if event.ID == 0 {
+		return NewErrorResponse(c, http.StatusInternalServerError, errors.New("Event not found"))
+	}
+
+	// check event is mine
+	if !tc.ec.IsMyEvent(c, event) {
+		return NewErrorResponse(c, http.StatusForbidden, errors.New("Forbidden"))
 	}
 
 	c.Bind(&ticket)
@@ -54,6 +63,8 @@ func (tc TicketController) GetAll(c echo.Context) error {
 
 func (tc TicketController) Get(c echo.Context) error {
 	ticket_id, _ := strconv.Atoi(c.Param("ticket_id"))
+
+	// check ticket
 	ticket, err := tc.ts.Get(uint(ticket_id))
 	if err != nil {
 		return NewErrorResponse(c, http.StatusInternalServerError, err)
@@ -69,6 +80,16 @@ func (tc TicketController) Update(c echo.Context) error {
 	event_id, _ := strconv.Atoi(c.Param("event_id"))
 	ticket_id, _ := strconv.Atoi(c.Param("ticket_id"))
 
+	// check Event
+	event, err := tc.ec.es.Get(uint(event_id))
+	if err != nil {
+		return NewErrorResponse(c, http.StatusInternalServerError, err)
+	}
+	if event.ID == 0 {
+		return NewErrorResponse(c, http.StatusInternalServerError, errors.New("Event not found"))
+	}
+
+	// check Ticket
 	ticket, err := tc.ts.Get(uint(ticket_id))
 	if err != nil {
 		return NewErrorResponse(c, http.StatusInternalServerError, err)
@@ -77,9 +98,9 @@ func (tc TicketController) Update(c echo.Context) error {
 		return NewErrorResponse(c, http.StatusNotFound, errors.New("ticket not found"))
 	}
 
-	event, err := tc.checkEvent(c, uint(event_id))
-	if err != nil {
-		return NewErrorResponse(c, http.StatusInternalServerError, err)
+	// check Ticket && Event is mine
+	if !tc.IsMyTicket(c, event, ticket) {
+		return NewErrorResponse(c, http.StatusForbidden, errors.New("Forbidden"))
 	}
 
 	c.Bind(&ticket)
@@ -93,14 +114,30 @@ func (tc TicketController) Update(c echo.Context) error {
 }
 
 func (tc TicketController) Delete(c echo.Context) error {
+	event_id, _ := strconv.Atoi(c.Param("event_id"))
 	ticket_id, _ := strconv.Atoi(c.Param("ticket_id"))
 
+	// check Event
+	event, err := tc.ec.es.Get(uint(event_id))
+	if err != nil {
+		return NewErrorResponse(c, http.StatusInternalServerError, err)
+	}
+	if event.ID == 0 {
+		return NewErrorResponse(c, http.StatusInternalServerError, errors.New("Event not found"))
+	}
+
+	// check Ticket
 	ticket, err := tc.ts.Get(uint(ticket_id))
 	if err != nil {
 		return NewErrorResponse(c, http.StatusInternalServerError, err)
 	}
 	if ticket.ID == 0 {
 		return NewErrorResponse(c, http.StatusNotFound, errors.New("ticket not found"))
+	}
+
+	// check Ticket && Event is mine
+	if !tc.IsMyTicket(c, event, ticket) {
+		return NewErrorResponse(c, http.StatusForbidden, errors.New("Forbidden"))
 	}
 
 	ticket, err = tc.ts.Delete(ticket)
@@ -113,20 +150,27 @@ func (tc TicketController) Delete(c echo.Context) error {
 
 func (tc TicketController) GetAllByEventId(c echo.Context) error {
 	event_id, _ := strconv.Atoi(c.Param("event_id"))
-	tickets, err := tc.ts.GetAllByEventId(uint(event_id))
+
+	// check Event
+	event, err := tc.ec.es.Get(uint(event_id))
+	if err != nil {
+		return NewErrorResponse(c, http.StatusInternalServerError, err)
+	}
+	if event.ID == 0 {
+		return NewErrorResponse(c, http.StatusInternalServerError, errors.New("Event not found"))
+	}
+
+	tickets, err := tc.ts.GetAllByEventId(uint(event.ID))
 	if err != nil {
 		return NewErrorResponse(c, http.StatusInternalServerError, err)
 	}
 	return NewSuccessResponse(c, response.ToTicketListResponse(tickets))
 }
 
-func (tc TicketController) checkEvent(c echo.Context, event_id uint) (domain.Event, error) {
-	event, err := tc.es.Get(uint(event_id))
-	if err != nil {
-		return domain.Event{}, err
+func (tc TicketController) IsMyTicket(c echo.Context, event domain.Event, ticket domain.Ticket) bool {
+	if tc.ec.IsMyEvent(c, event) && event.ID == ticket.EventId {
+		return true
 	}
-	if event.ID == 0 {
-		return domain.Event{}, errors.New("event not found")
-	}
-	return event, nil
+
+	return false
 }

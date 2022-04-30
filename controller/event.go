@@ -60,9 +60,17 @@ func (ec EventController) Get(c echo.Context) error {
 }
 
 func (ec EventController) Update(c echo.Context) error {
-	event, err := ec.IsMyEvent(c)
+	event_id, _ := strconv.Atoi(c.Param("event_id"))
+	event, err := ec.es.Get(uint(event_id))
 	if err != nil {
-		return NewErrorResponse(c, http.StatusUnauthorized, err)
+		return NewErrorResponse(c, http.StatusInternalServerError, err)
+	}
+	if event.ID == 0 {
+		return NewErrorResponse(c, http.StatusInternalServerError, errors.New("event not found"))
+	}
+
+	if ec.IsMyEvent(c, event) {
+		return NewErrorResponse(c, http.StatusForbidden, err)
 	}
 
 	c.Bind(&event)
@@ -76,9 +84,17 @@ func (ec EventController) Update(c echo.Context) error {
 }
 
 func (ec EventController) Delete(c echo.Context) error {
-	event, err := ec.IsMyEvent(c)
+	event_id, _ := strconv.Atoi(c.Param("event_id"))
+	event, err := ec.es.Get(uint(event_id))
 	if err != nil {
-		return NewErrorResponse(c, http.StatusUnauthorized, err)
+		return NewErrorResponse(c, http.StatusInternalServerError, err)
+	}
+	if event.ID == 0 {
+		return NewErrorResponse(c, http.StatusInternalServerError, errors.New("event not found"))
+	}
+
+	if ec.IsMyEvent(c, event) {
+		return NewErrorResponse(c, http.StatusForbidden, err)
 	}
 
 	event, err = ec.es.Delete(event)
@@ -98,21 +114,12 @@ func (ec EventController) GetAllEventByUserId(c echo.Context) error {
 	return NewSuccessResponse(c, response.ToEventListResponse(events))
 }
 
-func (ec EventController) IsMyEvent(c echo.Context) (domain.Event, error) {
-	event_id, _ := strconv.Atoi(c.Param("event_id"))
-	event, err := ec.es.Get(uint(event_id))
-	if err != nil {
-		return domain.Event{}, err
-	}
-	if event.ID == 0 {
-		return domain.Event{}, errors.New("Unauthorize")
-	}
-
+func (ec EventController) IsMyEvent(c echo.Context, event domain.Event) bool {
 	user_id, _ := mid.ExtractTokenUser(c)
 
 	if user_id != event.UserId {
-		return domain.Event{}, errors.New("Unauthorize")
+		return false
 	}
 
-	return event, nil
+	return true
 }

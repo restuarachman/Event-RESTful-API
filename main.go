@@ -25,7 +25,7 @@ func main() {
 	ec := controller.NewEventController(es)
 
 	ts := _serviceMYSQL.NewDBTicketService(config.DB)
-	tc := controller.NewTicketController(ts, es)
+	tc := controller.NewTicketController(ts, ec)
 
 	// add log middleware
 	mid.LogMiddleware(e)
@@ -60,10 +60,10 @@ func main() {
 
 	e.GET("api/v1/tickets", tc.GetAll)
 	e.GET("api/v1/tickets/:ticket_id", tc.Get)
+	e.GET("api/v1/events/:event_id/tickets", tc.GetAllByEventId)
 	eEO.POST("api/v1/events/:event_id/tickets", tc.Create)
 	eEO.PUT("api/v1/events/:event_id/tickets/:ticket_id", tc.Update)
 	eEO.DELETE("api/v1/events/:event_id/tickets/:ticket_id", tc.Delete)
-	e.GET("api/v1/events/:event_id/tickets", tc.GetAllByEventId)
 
 	if err := e.Start(":8000"); err != http.ErrServerClosed {
 		log.Fatal(err)
