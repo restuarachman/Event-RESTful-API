@@ -93,7 +93,7 @@ func (ec EventController) Delete(c echo.Context) error {
 		return NewErrorResponse(c, http.StatusInternalServerError, errors.New("event not found"))
 	}
 
-	if ec.IsMyEvent(c, event) {
+	if !ec.IsMyEvent(c, event) {
 		return NewErrorResponse(c, http.StatusForbidden, err)
 	}
 
@@ -117,9 +117,5 @@ func (ec EventController) GetAllEventByUserId(c echo.Context) error {
 func (ec EventController) IsMyEvent(c echo.Context, event domain.Event) bool {
 	user_id, _ := mid.ExtractTokenUser(c)
 
-	if user_id != event.UserId {
-		return false
-	}
-
-	return true
+	return user_id == event.ID
 }

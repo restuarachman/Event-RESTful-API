@@ -8,8 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
-
 type Config struct {
 	DB_Username string
 	DB_Password string
@@ -18,12 +16,7 @@ type Config struct {
 	DB_Name     string
 }
 
-func InitDB() {
-	ConnectDB()
-	InitialMigration()
-}
-
-func ConnectDB() {
+func ConnectDB() *gorm.DB {
 	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		"root",
 		"",
@@ -31,19 +24,21 @@ func ConnectDB() {
 		"3306",
 		"alta",
 	)
-	var err error
-	DB, err = gorm.Open(mysql.Open(connectionString), &gorm.Config{})
+
+	DB, err := gorm.Open(mysql.Open(connectionString), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
+	InitialMigration(DB)
+	return DB
 }
 
-func InitialMigration() {
+func InitialMigration(DB *gorm.DB) {
 	DB.AutoMigrate(
 		&domain.User{},
 		&domain.Ticket{},
 		&domain.Order{},
 		&domain.Event{},
-		&domain.OrderDetails{},
+		&domain.OrderDetail{},
 	)
 }

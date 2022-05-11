@@ -17,6 +17,11 @@ type UserController struct {
 	us service.UserService
 }
 
+type LoginInfo struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 func NewUserController(us service.UserService) UserController {
 	return UserController{
 		us: us,
@@ -100,12 +105,12 @@ func (uc UserController) Login(c echo.Context) error {
 
 	c.Bind(&user)
 	userDB, err := uc.us.GetByUsername(user)
+	fmt.Println(userDB)
 	if err != nil {
 		return NewErrorResponse(c, http.StatusInternalServerError, err)
 	}
 
-	fmt.Println(user)
-	fmt.Println(userDB)
+	fmt.Println(user.Password)
 	if !encrypt.ValidateHash(user.Password, userDB.Password) {
 		return NewErrorResponse(c, http.StatusForbidden, fmt.Errorf("Username or Password invalid"))
 	}

@@ -14,18 +14,22 @@ import (
 )
 
 func main() {
-	config.InitDB()
+	DB := config.ConnectDB()
 	e := echo.New()
 
 	// make controller
-	us := _serviceMYSQL.NewDBUserService(config.DB)
+	us := _serviceMYSQL.NewDBUserService(DB)
 	uc := controller.NewUserController(us)
 
-	es := _serviceMYSQL.NewDBEventService(config.DB)
+	es := _serviceMYSQL.NewDBEventService(DB)
 	ec := controller.NewEventController(es)
 
-	ts := _serviceMYSQL.NewDBTicketService(config.DB)
+	ts := _serviceMYSQL.NewDBTicketService(DB)
 	tc := controller.NewTicketController(ts, ec)
+
+	os := _serviceMYSQL.NewDBOrderService(DB)
+	ods := _serviceMYSQL.NewDBOrderDetailService(DB)
+	oc := controller.NewOrderController(os, ods, tc)
 
 	// add log middleware
 	mid.LogMiddleware(e)
@@ -64,6 +68,12 @@ func main() {
 	eEO.POST("api/v1/events/:event_id/tickets", tc.Create)
 	eEO.PUT("api/v1/events/:event_id/tickets/:ticket_id", tc.Update)
 	eEO.DELETE("api/v1/events/:event_id/tickets/:ticket_id", tc.Delete)
+
+	eAdmin.GET("api/v1/orders", oc.GetAll)
+	eCustomer.POST("api/v1/orders", oc.Create)
+	eCustomer.GET("api/v1/orders/:order_id", oc.Get)
+	eCustomer.PUT("api/v1/orders/:order_id", oc.Update)
+	eCustomer.GET("api/v1/users/:user_id/orders", oc.GetAllByUser)
 
 	if err := e.Start(":8000"); err != http.ErrServerClosed {
 		log.Fatal(err)
