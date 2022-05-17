@@ -1,6 +1,7 @@
 package mock
 
 import (
+	"errors"
 	"ticketing/helper/encrypt"
 	"ticketing/model/domain"
 )
@@ -16,7 +17,7 @@ func NewMockUserService() *MockUserService {
 	}
 }
 
-func (uc *MockUserService) Save(user domain.User) (domain.User, error) {
+func (uc *MockUserService) Add(user domain.User) (domain.User, error) {
 	uc.numid++
 	user.ID = uint(uc.numid)
 	pw, _ := encrypt.Hash(user.Password)
@@ -33,12 +34,35 @@ func (uc *MockUserService) Get(id uint) (domain.User, error) {
 			return val, nil
 		}
 	}
-	return domain.User{}, nil
+	return domain.User{}, errors.New("User not found")
 }
-func (uc *MockUserService) Delete(user domain.User) (domain.User, error) {
-
+func (uc *MockUserService) Update(id uint, user domain.User, jwtID uint) (domain.User, error) {
+	user, err := uc.Get(id)
+	if err != nil {
+		return domain.User{}, err
+	}
+	if id != jwtID {
+		return domain.User{}, errors.New("forbidden")
+	}
+	for _, val := range uc.data {
+		if val.ID == id {
+			val = user
+			val.ID = id
+			return val, nil
+		}
+	}
+	return domain.User{}, errors.New("User not found")
+}
+func (uc *MockUserService) Delete(id uint, jwtID uint) (domain.User, error) {
+	user, err := uc.Get(id)
+	if err != nil {
+		return domain.User{}, err
+	}
+	if id != jwtID {
+		return domain.User{}, errors.New("forbidden")
+	}
 	for i, val := range uc.data {
-		if val.ID == user.ID {
+		if val.ID == id {
 			j := i
 			for j < len(uc.data)-1 {
 				uc.data[i] = uc.data[j+1]
