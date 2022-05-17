@@ -44,7 +44,7 @@ func TestUserControllerLogin(t *testing.T) {
 	e := echo.New()
 
 	us := mock.NewMockUserService()
-	us.Save(domain.User{Username: "dono", Password: "rahasia"})
+	us.Add(domain.User{Username: "dono", Password: "rahasia"})
 
 	user := domain.User{Username: "dono", Password: "rahasia"}
 
@@ -119,9 +119,9 @@ func TestUserControllerGetAll(t *testing.T) {
 	c.SetPath("/")
 
 	us := mock.NewMockUserService()
-	us.Save(domain.User{Email: "restu@gmail.com"})
-	us.Save(domain.User{Email: "aditya@gmail.com"})
-	us.Save(domain.User{Email: "rachman@gmail.com"})
+	us.Add(domain.User{Email: "restu@gmail.com"})
+	us.Add(domain.User{Email: "aditya@gmail.com"})
+	us.Add(domain.User{Email: "rachman@gmail.com"})
 
 	uc := NewUserController(us)
 	uc.GetAll(c)
@@ -151,9 +151,9 @@ func TestUserControllerGet(t *testing.T) {
 	e := echo.New()
 
 	us := mock.NewMockUserService()
-	us.Save(domain.User{Username: "restu", Password: "rahasia"})
-	us.Save(domain.User{Username: "aditya", Password: "rahasia"})
-	us.Save(domain.User{Username: "rachman", Password: "rahasia"})
+	us.Add(domain.User{Username: "restu", Password: "rahasia"})
+	us.Add(domain.User{Username: "aditya", Password: "rahasia"})
+	us.Add(domain.User{Username: "rachman", Password: "rahasia"})
 
 	// Login First
 	loginUser := domain.User{Username: "restu", Password: "rahasia"}
