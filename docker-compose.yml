@@ -7,7 +7,7 @@ services:
       db:
         condition: service_healthy
     ports:
-      - 8001:8000
+      - 8000:8000
     environment:
       - APP_DB_USERNAME=root
       - APP_DB_PASSWORD=toor
