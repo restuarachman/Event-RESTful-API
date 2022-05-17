@@ -37,7 +37,7 @@ func (uc *MockUserService) Get(id uint) (domain.User, error) {
 	return domain.User{}, errors.New("User not found")
 }
 func (uc *MockUserService) Update(id uint, user domain.User, jwtID uint) (domain.User, error) {
-	user, err := uc.Get(id)
+	_, err := uc.Get(id)
 	if err != nil {
 		return domain.User{}, err
 	}
