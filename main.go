@@ -49,7 +49,7 @@ func main() {
 
 	// Route
 	eAdmin.GET("api/v1/users", uc.GetAll)
-	eAdmin.GET("api/v1/users/:user_id", uc.Get)
+	eJwt.GET("api/v1/users/:user_id", uc.Get)
 	eJwt.PUT("api/v1/users/:user_id", uc.Update)
 	eJwt.DELETE("api/v1/users/:user_id", uc.Delete)
 	e.POST("api/v1/register", uc.Register)
