@@ -14,18 +14,22 @@ import (
 )
 
 func main() {
-	config.InitDB()
+	DB := config.ConnectDB()
 	e := echo.New()
 
 	// make controller
-	us := _serviceMYSQL.NewDBUserService(config.DB)
+	us := _serviceMYSQL.NewDBUserService(DB)
 	uc := controller.NewUserController(us)
 
-	es := _serviceMYSQL.NewDBEventService(config.DB)
+	es := _serviceMYSQL.NewDBEventService(DB)
 	ec := controller.NewEventController(es)
 
-	ts := _serviceMYSQL.NewDBTicketService(config.DB)
-	tc := controller.NewTicketController(ts)
+	ts := _serviceMYSQL.NewDBTicketService(DB)
+	tc := controller.NewTicketController(ts, ec)
+
+	os := _serviceMYSQL.NewDBOrderService(DB)
+	ods := _serviceMYSQL.NewDBOrderDetailService(DB)
+	oc := controller.NewOrderController(os, ods, tc)
 
 	// add log middleware
 	mid.LogMiddleware(e)
@@ -46,30 +50,32 @@ func main() {
 	// Route
 	eAdmin.GET("api/v1/users", uc.GetAll)
 	eAdmin.GET("api/v1/users/:user_id", uc.Get)
-	eCustomer.PUT("api/v1/users/:user_id", uc.Update)
-	eCustomer.DELETE("api/v1/users/:user_id", uc.Delete)
+	eJwt.PUT("api/v1/users/:user_id", uc.Update)
+	eJwt.DELETE("api/v1/users/:user_id", uc.Delete)
 	e.POST("api/v1/register", uc.Register)
 	e.POST("api/v1/login", uc.Login)
 
 	e.GET("api/v1/events", ec.GetAll)
+	eEO.POST("api/v1/events", ec.Create)
 	e.GET("api/v1/events/:event_id", ec.Get)
-	eEO.GET("api/v1/users/:user_id/events", ec.GetAllEventByUserId, mid.SelfMiddleware)
-	eEO.POST("api/v1/events", ec.Create1)
-	eEO.POST("api/v1/users/:user_id/events", ec.Create2, mid.SelfMiddleware)
-	eEO.GET("api/v1/users/:user_id/events/:event_id", ec.Get, mid.SelfMiddleware)
-	// eEO.PUT("api/v1/events/:event_id", ec.Update)
-	eEO.PUT("api/v1/users/:user_id/events/:event_id", ec.Update, mid.SelfMiddleware)
-	// eEO.DELETE("api/v1/events/:event_id", ec.Delete)
-	eEO.DELETE("api/v1/users/:user_id/events/:event_id", ec.Delete, mid.SelfMiddleware)
+	eEO.PUT("api/v1/events/:event_id", ec.Update)
+	eEO.DELETE("api/v1/events/:event_id", ec.Delete)
+	e.GET("api/v1/users/:user_id/events", ec.GetAllEventByUserId)
 
 	e.GET("api/v1/tickets", tc.GetAll)
+	e.GET("api/v1/tickets/:ticket_id", tc.Get)
 	e.GET("api/v1/events/:event_id/tickets", tc.GetAllByEventId)
-	e.POST("api/v1/users/:user_id/events/:event_id/tickets", tc.Create)
-	e.PUT("api/v1/users/:user_id/events/:event_id/tickets/:ticket_id", tc.Update)
-	e.DELETE("api/v1/users/:user_id/events/:event_id/tickets/:ticket_id", tc.Delete)
+	eEO.POST("api/v1/events/:event_id/tickets", tc.Create)
+	eEO.PUT("api/v1/events/:event_id/tickets/:ticket_id", tc.Update)
+	eEO.DELETE("api/v1/events/:event_id/tickets/:ticket_id", tc.Delete)
+
+	eAdmin.GET("api/v1/orders", oc.GetAll)
+	eCustomer.POST("api/v1/orders", oc.Create)
+	eCustomer.GET("api/v1/orders/:order_id", oc.Get)
+	eCustomer.PUT("api/v1/orders/:order_id", oc.Update)
+	eCustomer.GET("api/v1/users/:user_id/orders", oc.GetAllByUser)
 
 	if err := e.Start(":8000"); err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
-
 }

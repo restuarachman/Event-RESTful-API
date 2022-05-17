@@ -1,0 +1,36 @@
+services:
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - 8000:8000
+    environment:
+      - APP_DB_USERNAME=root
+      - APP_DB_PASSWORD=toor
+      - APP_DB_PORT=3306
+      - APP_DB_HOST=db
+      - APP_DB_NAME=event_hunter
+  
+  db:
+    image: bitnami/mysql
+    
+    # selalu restart container ini, kecuali container nya di stop
+    restart: unless-stopped
+    ports:
+      - 3307:3306
+    environment:
+      - MYSQL_DATABASE=event_hunter
+      - MYSQL_ROOT_PASSWORD=toor
+    healthcheck:
+      test: ["CMD", "mysql", "-u", "root", "-ptoor", "-e", "show schemas"]
+      timeout: 10s
+
+  adminer:
+    image: adminer
+    restart: unless-stopped
+    ports:
+      - 8002:8000

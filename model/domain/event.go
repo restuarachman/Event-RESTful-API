@@ -8,7 +8,7 @@ import (
 
 type Event struct {
 	gorm.Model
-	UserId      uint      `json:"user id" form:"user id"`
+	UserId      uint
 	Name        string    `json:"name" form:"name"`
 	Description string    `json:"description" form:"description"`
 	DateStart   time.Time `json:"date start" form:"date start"`

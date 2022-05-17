@@ -2,13 +2,12 @@ package config
 
 import (
 	"fmt"
+	"os"
 	"ticketing/model/domain"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
-
-var DB *gorm.DB
 
 type Config struct {
 	DB_Username string
@@ -18,32 +17,58 @@ type Config struct {
 	DB_Name     string
 }
 
-func InitDB() {
-	ConnectDB()
-	InitialMigration()
-}
+func ConnectDB() *gorm.DB {
+	username := os.Getenv("APP_DB_USERNAME")
+	if username == "" {
+		username = "root"
+	}
+	password := os.Getenv("APP_DB_PASSWORD")
+	if password == "" {
+		password = ""
+	}
+	port := os.Getenv("APP_DB_PORT")
+	if port == "" {
+		port = "3306"
+	}
+	host := os.Getenv("APP_DB_HOST")
+	if host == "" {
+		host = "127.0.0.1"
+	}
+	name := os.Getenv("APP_DB_NAME")
+	if name == "" {
+		name = "alta"
+	}
 
-func ConnectDB() {
+	config := Config{
+		DB_Username: username,
+		DB_Password: password,
+		DB_Port:     port,
+		DB_Host:     host,
+		DB_Name:     name,
+	}
+
 	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
-		"root",
-		"",
-		"localhost",
-		"3306",
-		"alta",
+		config.DB_Username,
+		config.DB_Password,
+		config.DB_Host,
+		config.DB_Port,
+		config.DB_Name,
 	)
-	var err error
-	DB, err = gorm.Open(mysql.Open(connectionString), &gorm.Config{})
+
+	DB, err := gorm.Open(mysql.Open(connectionString), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
+	InitialMigration(DB)
+	return DB
 }
 
-func InitialMigration() {
+func InitialMigration(DB *gorm.DB) {
 	DB.AutoMigrate(
 		&domain.User{},
 		&domain.Ticket{},
 		&domain.Order{},
 		&domain.Event{},
-		&domain.OrderDetails{},
+		&domain.OrderDetail{},
 	)
 }
