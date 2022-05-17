@@ -1,11 +1,13 @@
 package mock
 
 import (
+	"ticketing/helper/encrypt"
 	"ticketing/model/domain"
 )
 
 type MockUserService struct {
-	data []domain.User
+	data  []domain.User
+	numid int
 }
 
 func NewMockUserService() *MockUserService {
@@ -15,6 +17,10 @@ func NewMockUserService() *MockUserService {
 }
 
 func (uc *MockUserService) Save(user domain.User) (domain.User, error) {
+	uc.numid++
+	user.ID = uint(uc.numid)
+	pw, _ := encrypt.Hash(user.Password)
+	user.Password = pw
 	uc.data = append(uc.data, user)
 	return user, nil
 }

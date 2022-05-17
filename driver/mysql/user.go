@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"errors"
 	"ticketing/model/domain"
 
 	"gorm.io/gorm"
@@ -33,12 +34,19 @@ func (us *DBUserService) Get(id uint) (domain.User, error) {
 	user := domain.User{}
 	tx := us.db.Find(&user, id)
 	err := tx.Error
+	if user.ID == 0 {
+		return user, errors.New("User not found")
+	}
 	return user, err
 }
 
-func (us *DBUserService) Delete(user domain.User) (domain.User, error) {
+func (us *DBUserService) Delete(id uint) (domain.User, error) {
+	user, err := us.Get(id)
+	if err != nil {
+		return user, err
+	}
 	tx := us.db.Delete(&user)
-	err := tx.Error
+	err = tx.Error
 	return user, err
 }
 

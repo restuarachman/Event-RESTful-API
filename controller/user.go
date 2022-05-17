@@ -38,14 +38,13 @@ func (uc UserController) GetAll(c echo.Context) error {
 
 func (uc UserController) Get(c echo.Context) error {
 	user_id, _ := strconv.Atoi(c.Param("user_id"))
+
 	user, err := uc.us.Get(uint(user_id))
 
 	if err != nil {
 		return NewErrorResponse(c, http.StatusInternalServerError, err)
 	}
-	if user.ID == 0 {
-		return NewErrorResponse(c, http.StatusInternalServerError, fmt.Errorf("user not found"))
-	}
+
 	if !uc.IsMine(c, user) {
 		return NewErrorResponse(c, http.StatusForbidden, fmt.Errorf("forbidden"))
 	}
