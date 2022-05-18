@@ -29,25 +29,3 @@ func ExtractTokenUser(c echo.Context) (uint, string) {
 	}
 	return 0, ""
 }
-
-// func ExtractTokenUserRole(c echo.Context) string {
-// 	user := c.Get("user").(*jwt.Token)
-// 	if user.Valid {
-// 		claims := user.Claims.(jwt.MapClaims)
-// 		role := claims["role"].(string)
-
-// 		return role
-// 	}
-// 	return ""
-// }
-
-// func ExtractTokenUserId(c echo.Context) uint {
-// 	user := c.Get("user").(*jwt.Token)
-// 	if user.Valid {
-// 		claims := user.Claims.(jwt.MapClaims)
-// 		role := claims["userId"].(float64)
-
-// 		return uint(role)
-// 	}
-// 	return 0
-// }
