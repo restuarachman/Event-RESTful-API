@@ -94,7 +94,7 @@ func (ec EventController) Delete(c echo.Context) error {
 	}
 
 	if !ec.IsMyEvent(c, event) {
-		return NewErrorResponse(c, http.StatusForbidden, err)
+		return NewErrorResponse(c, http.StatusForbidden, errors.New("forbidden"))
 	}
 
 	event, err = ec.es.Delete(event)
@@ -117,5 +117,5 @@ func (ec EventController) GetAllEventByUserId(c echo.Context) error {
 func (ec EventController) IsMyEvent(c echo.Context, event domain.Event) bool {
 	user_id, _ := mid.ExtractTokenUser(c)
 
-	return user_id == event.ID
+	return user_id == event.UserId
 }
