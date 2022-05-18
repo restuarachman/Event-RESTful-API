@@ -68,7 +68,7 @@ func (us *DBUserService) Update(id uint, user domain.User, jwtID uint) (domain.U
 
 	tx := us.db.Save(&userDB)
 	err = tx.Error
-	return user, err
+	return userDB, err
 }
 
 func (us *DBUserService) Delete(id uint, jwtID uint) (domain.User, error) {
