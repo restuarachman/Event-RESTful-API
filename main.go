@@ -48,6 +48,10 @@ func main() {
 	eEO.Use(mid.EoMiddleware)
 
 	// Route
+	e.GET("/", func(c echo.Context) error {
+		return c.String(http.StatusOK, "Hello, World!")
+	})
+
 	eAdmin.GET("api/v1/users", uc.GetAll)
 	eJwt.GET("api/v1/users/:user_id", uc.Get)
 	eJwt.PUT("api/v1/users/:user_id", uc.Update)
