@@ -96,6 +96,7 @@ func (uc UserController) Login(c echo.Context) error {
 	return NewSuccessResponse(c, response.ToUserLoginResponse(userDB, token))
 }
 
+// test appleyboy
 func (uc UserController) Register(c echo.Context) error {
 	var user domain.User
 	c.Bind(&user)
