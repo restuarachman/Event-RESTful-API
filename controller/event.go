@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 	mid "ticketing/middleware"
@@ -28,9 +27,8 @@ func (ec EventController) Create(c echo.Context) error {
 	c.Bind(&event)
 
 	user_id, _ := mid.ExtractTokenUser(c)
-	event.UserId = uint(user_id)
 
-	event, err := ec.es.Save(event)
+	event, err := ec.es.Add(event, user_id)
 	if err != nil {
 		return NewErrorResponse(c, http.StatusInternalServerError, err)
 	}
@@ -52,30 +50,18 @@ func (ec EventController) Get(c echo.Context) error {
 	if err != nil {
 		return NewErrorResponse(c, http.StatusInternalServerError, err)
 	}
-	if event.ID == 0 {
-		return NewErrorResponse(c, http.StatusInternalServerError, errors.New("event not found"))
-	}
 
 	return NewSuccessResponse(c, response.ToEventResponse(event))
 }
 
 func (ec EventController) Update(c echo.Context) error {
 	event_id, _ := strconv.Atoi(c.Param("event_id"))
-	event, err := ec.es.Get(uint(event_id))
-	if err != nil {
-		return NewErrorResponse(c, http.StatusInternalServerError, err)
-	}
-	if event.ID == 0 {
-		return NewErrorResponse(c, http.StatusInternalServerError, errors.New("event not found"))
-	}
 
-	if ec.IsMyEvent(c, event) {
-		return NewErrorResponse(c, http.StatusForbidden, err)
-	}
-
+	event := domain.Event{}
 	c.Bind(&event)
 
-	event, err = ec.es.Save(event)
+	user_id, _ := mid.ExtractTokenUser(c)
+	event, err := ec.es.Update(uint(event_id), event, user_id)
 	if err != nil {
 		return NewErrorResponse(c, http.StatusInternalServerError, err)
 	}
@@ -85,19 +71,9 @@ func (ec EventController) Update(c echo.Context) error {
 
 func (ec EventController) Delete(c echo.Context) error {
 	event_id, _ := strconv.Atoi(c.Param("event_id"))
-	event, err := ec.es.Get(uint(event_id))
-	if err != nil {
-		return NewErrorResponse(c, http.StatusInternalServerError, err)
-	}
-	if event.ID == 0 {
-		return NewErrorResponse(c, http.StatusInternalServerError, errors.New("event not found"))
-	}
+	user_id, _ := mid.ExtractTokenUser(c)
 
-	if !ec.IsMyEvent(c, event) {
-		return NewErrorResponse(c, http.StatusForbidden, errors.New("forbidden"))
-	}
-
-	event, err = ec.es.Delete(event)
+	event, err := ec.es.Delete(uint(event_id), user_id)
 	if err != nil {
 		return NewErrorResponse(c, http.StatusInternalServerError, err)
 	}

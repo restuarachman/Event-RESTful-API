@@ -1,7 +1,6 @@
 package route
 
 import (
-	"net/http"
 	"ticketing/controller"
 	mid "ticketing/middleware"
 	"ticketing/middleware/constants"
@@ -36,50 +35,33 @@ func (rh *RouteHandler) HandlerUserRoutes(e *echo.Echo) {
 	mid.LogMiddleware(e)
 
 	// add jwt middleware
-	eJwt := e.Group("")
-	eJwt.Use(middleware.JWT([]byte(constants.SECRET_JWT)))
-
-	// add admin middleware
-	eAdmin := eJwt.Group("")
-	eAdmin.Use(mid.AdminMiddleware)
-
-	// add customer middleware
-	eCustomer := eJwt.Group("")
-	eCustomer.Use(mid.CustomerMiddleware)
-
-	// add event organizer middleware
-	eEO := eJwt.Group("")
-	eEO.Use(mid.EoMiddleware)
+	jwtMiddlware := middleware.JWT([]byte(constants.SECRET_JWT))
 
 	// Route
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
-	})
-
-	eAdmin.GET("api/v1/users", rh.uc.GetAll)
-	eJwt.GET("api/v1/users/:user_id", rh.uc.Get)
-	eJwt.PUT("api/v1/users/:user_id", rh.uc.Update)
-	eJwt.DELETE("api/v1/users/:user_id", rh.uc.Delete)
+	e.GET("api/v1/users", rh.uc.GetAll, jwtMiddlware, mid.AdminMiddleware)
+	e.GET("api/v1/users/:user_id", rh.uc.Get, jwtMiddlware)
+	e.PUT("api/v1/users/:user_id", rh.uc.Update, jwtMiddlware)
+	e.DELETE("api/v1/users/:user_id", rh.uc.Delete, jwtMiddlware)
 	e.POST("api/v1/register", rh.uc.Register)
 	e.POST("api/v1/login", rh.uc.Login)
 
 	e.GET("api/v1/events", rh.ec.GetAll)
-	eEO.POST("api/v1/events", rh.ec.Create)
+	e.POST("api/v1/events", rh.ec.Create, jwtMiddlware, mid.EoMiddleware)
 	e.GET("api/v1/events/:event_id", rh.ec.Get)
-	eEO.PUT("api/v1/events/:event_id", rh.ec.Update)
-	eEO.DELETE("api/v1/events/:event_id", rh.ec.Delete)
+	e.PUT("api/v1/events/:event_id", rh.ec.Update, jwtMiddlware, mid.EoMiddleware)
+	e.DELETE("api/v1/events/:event_id", rh.ec.Delete, jwtMiddlware, mid.EoMiddleware)
 	e.GET("api/v1/users/:user_id/events", rh.ec.GetAllEventByUserId)
 
 	e.GET("api/v1/tickets", rh.tc.GetAll)
 	e.GET("api/v1/tickets/:ticket_id", rh.tc.Get)
 	e.GET("api/v1/events/:event_id/tickets", rh.tc.GetAllByEventId)
-	eEO.POST("api/v1/events/:event_id/tickets", rh.tc.Create)
-	eEO.PUT("api/v1/events/:event_id/tickets/:ticket_id", rh.tc.Update)
-	eEO.DELETE("api/v1/events/:event_id/tickets/:ticket_id", rh.tc.Delete)
+	e.POST("api/v1/events/:event_id/tickets", rh.tc.Create, jwtMiddlware, mid.EoMiddleware)
+	e.PUT("api/v1/events/:event_id/tickets/:ticket_id", rh.tc.Update, jwtMiddlware, mid.EoMiddleware)
+	e.DELETE("api/v1/events/:event_id/tickets/:ticket_id", rh.tc.Delete, jwtMiddlware, mid.EoMiddleware)
 
-	eAdmin.GET("api/v1/orders", rh.oc.GetAll)
-	eCustomer.POST("api/v1/orders", rh.oc.Create)
-	eCustomer.GET("api/v1/orders/:order_id", rh.oc.Get)
-	eCustomer.PUT("api/v1/orders/:order_id", rh.oc.Update)
-	eCustomer.GET("api/v1/users/:user_id/orders", rh.oc.GetAllByUser)
+	e.GET("api/v1/orders", rh.oc.GetAll, jwtMiddlware, mid.AdminMiddleware)
+	e.POST("api/v1/orders", rh.oc.Create, jwtMiddlware, mid.CustomerMiddleware)
+	e.GET("api/v1/orders/:order_id", rh.oc.Get, jwtMiddlware, mid.CustomerMiddleware)
+	e.PUT("api/v1/orders/:order_id", rh.oc.Update, jwtMiddlware, mid.CustomerMiddleware)
+	e.GET("api/v1/users/:user_id/orders", rh.oc.GetAllByUser, jwtMiddlware, mid.CustomerMiddleware)
 }

@@ -25,9 +25,11 @@ func (uc *MockUserService) Add(user domain.User) (domain.User, error) {
 	uc.data = append(uc.data, user)
 	return user, nil
 }
+
 func (uc *MockUserService) GetAll() ([]domain.User, error) {
 	return uc.data, nil
 }
+
 func (uc *MockUserService) Get(id uint) (domain.User, error) {
 	for _, val := range uc.data {
 		if val.ID == id {
@@ -36,6 +38,7 @@ func (uc *MockUserService) Get(id uint) (domain.User, error) {
 	}
 	return domain.User{}, errors.New("User not found")
 }
+
 func (uc *MockUserService) Update(id uint, user domain.User, jwtID uint) (domain.User, error) {
 	_, err := uc.Get(id)
 	if err != nil {
@@ -53,6 +56,7 @@ func (uc *MockUserService) Update(id uint, user domain.User, jwtID uint) (domain
 	}
 	return domain.User{}, errors.New("User not found")
 }
+
 func (uc *MockUserService) Delete(id uint, jwtID uint) (domain.User, error) {
 	user, err := uc.Get(id)
 	if err != nil {
@@ -72,13 +76,14 @@ func (uc *MockUserService) Delete(id uint, jwtID uint) (domain.User, error) {
 			return user, nil
 		}
 	}
-	return domain.User{}, nil
+	return domain.User{}, errors.New("User not found")
 }
+
 func (uc *MockUserService) GetByUsername(user domain.User) (domain.User, error) {
 	for _, val := range uc.data {
 		if val.Username == user.Username {
 			return val, nil
 		}
 	}
-	return domain.User{}, nil
+	return domain.User{}, errors.New("User not found")
 }
