@@ -75,7 +75,7 @@ func (ec *MockEventService) Delete(event_id uint, jwtID uint) (domain.Event, err
 			return event, nil
 		}
 	}
-	return domain.Event{}, nil
+	return domain.Event{}, errors.New("Event not found")
 }
 
 func (ec *MockEventService) GetByUserId(user_id uint) ([]domain.Event, error) {
