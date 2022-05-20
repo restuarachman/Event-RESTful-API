@@ -33,4 +33,4 @@ services:
     image: adminer
     restart: unless-stopped
     ports:
-      - 8002:8000
+      - 8001:8000
